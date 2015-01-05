@@ -5,6 +5,8 @@ use Zikarsky\React\Gearman\Command\Binary\Command;
 use Zikarsky\React\Gearman\Command\Binary\CommandInterface;
 use Zikarsky\React\Gearman\Command\Binary\CommandFactory;
 use Zikarsky\React\Gearman\Protocol\Connection;
+use React\Promise\FulfilledPromise;
+use React\Stream\Buffer;
 
 class ConnectionTest extends PHPUnit_Framework_TestCase
 {
@@ -13,6 +15,7 @@ class ConnectionTest extends PHPUnit_Framework_TestCase
     protected $packetStr;
 
     protected $stream;
+    protected $buffer;
     protected $connection;
 
     public function setUp()
@@ -22,7 +25,9 @@ class ConnectionTest extends PHPUnit_Framework_TestCase
         $fac = new CommandFactory();
         $fac->addType($this->type);
 
-        $this->stream = $this->getMock('\React\Stream\Stream', ['write', 'close'], [], '', false);
+        $this->buffer = $this->getMock('\React\Stream\Buffer', ['on'], [], '', false);
+        $this->stream = $this->getMock('\React\Stream\Stream', ['write', 'close', 'getBuffer'], [], '', false);
+        $this->stream->expects($this->any())->method('getBuffer')->will($this->returnValue($this->buffer));
         $this->connection = new Connection($this->stream, $fac);
         $this->packet = $fac->create(1, ["a" => "foo", "b" => 1]);
 
