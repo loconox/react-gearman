@@ -12,26 +12,20 @@ $factory = new Factory();
 
 $factory->createClient("127.0.0.1", 4730)->then(
     // on successful creation
-    function (ClientInterface $client) use ($factory) {
-
+    function (ClientInterface $client)  {
         $hosts = ['google.com', 'facebook.com', 'github.com', 'wikipedia.org'];
-        $client->submit("ping", $hosts)->then(function(TaskInterface $task) use ($client, $factory) {
+        $client->submit("ping", $hosts)->then(function(TaskInterface $task) {
             printf("Pinging: %s [handle:%s]\n", 
                 implode(", ", $task->getWorkload()), 
                 $task->getHandle()
             );
             
-#            $timer = $factory->getEventLoop()->addPeriodicTimer(0.2, function() use ($client, $task) {
-#                $client->getStatus($task);   
-#            });
-
             $task->on('data', function(TaskDataEvent $event) {
                 echo "Partial update:\n";
                 print_r($event->getData());
             });
             
             $task->on('complete', function (TaskDataEvent $event, ClientInterface $client) {
-#                $timer->cancel();
                 echo "Final result: \n";
                 print_r($event->getData());
                 $client->disconnect();
